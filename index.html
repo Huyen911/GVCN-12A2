@@ -5730,26 +5730,25 @@ window.renderLoginScreen = function() {
         };
 const API_URL = "https://script.google.com/macros/s/AKfycbwn8EiWMbTs-J23Md1uAixbCG3rqZbQWCYdXPlUxlpy7x5ssriBfHa8aDAR79Vt-gRq/exec";
 window.startApp = async function() {
-            try {
-                const response = await fetch(API_URL);
-        const cloudData = await response.json();
+    // 1. Tải và hiển thị giao diện ngay lập tức từ bộ nhớ máy để không bị màn hình trắng
+    initDefaultStudents();
+    applyStateDefaults();
+    isDataLoaded = true;
+    renderLayout();
 
+    // 2. Sau khi hiện giao diện xong, mới âm thầm tải dữ liệu từ Google Sheets ngầm ở dưới
+    try {
+        const response = await fetch(API_URL);
+        const cloudData = await response.json();
         if (cloudData && Object.keys(cloudData).length > 0) {
             state = { ...state, ...cloudData };
             applyStateDefaults();
-        } else {
-            initDefaultStudents();
-            applyStateDefaults();
-            await saveDataToCloud();
+            renderLayout(); // Vẽ lại giao diện lần 2 với dữ liệu mới nhất từ mây
         }
     } catch (err) {
-        console.error("Lỗi tải dữ liệu:", err);
-        initDefaultStudents();
-        applyStateDefaults();
+        console.log("Đang chạy chế độ ngoại tuyến (offline)");
     }
-    isDataLoaded = true;
-    renderLayout();
-        };
+};
 
       async function saveDataToCloud() {
     try {
