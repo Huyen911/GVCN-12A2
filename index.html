@@ -5751,20 +5751,21 @@ window.startApp = async function() {
     renderLayout();
         };
 
-        function saveDataToCloud() {
-            try {
-                localStorage.setItem('chuyen_tau_data', JSON.stringify(state));
-            } catch (e) {
-                console.warn("Không thể lưu localStorage:", e);
-            }
-        }
-       window.onload = function() { 
-    if (typeof window.startApp === 'function') {
-        window.startApp(); 
-    } else {
-        console.error("Không tìm thấy hàm khởi động startApp!");
+      async function saveDataToCloud() {
+    try {
+        // Vẫn lưu vào máy để dùng offline
+        localStorage.setItem('chuyen_tau_data', JSON.stringify(state));
+        
+        // Gửi dữ liệu lên Google Sheets
+        await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify(state)
+        });
+        console.log("Đã đồng bộ lên Google Sheets thành công!");
+    } catch (err) {
+        console.error("Lỗi lưu dữ liệu lên cloud:", err);
     }
-};
+}
 window.deleteHistoryRecord = function(studentId, historyId) {
             const student = state.students.find(s => s.id === studentId);
             if (!student) return;
